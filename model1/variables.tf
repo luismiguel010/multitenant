@@ -101,6 +101,16 @@ variable "azurerm_iothub_model1_multitenant_sku_capacity" {
   description = "IoT Hub Sku capacity"
 }
 
+variable "azurerm_iothub_consumer_group_name" {
+  type        = string
+  description = "IoT Hub consumer group name"
+}
+
+variable "azurerm_iothub_consumer_group_eventhub_endpoint_name" {
+  type        = string
+  description = "IoT Hub consumer group event hub endpoint name"
+}
+
 variable "azurerm_stream_analytics_stream_input_iothub_model1_multitenant_name" {
   type        = string
   description = "Stram analytics input iot hub name"

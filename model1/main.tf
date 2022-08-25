@@ -36,10 +36,6 @@ resource "azurerm_cosmosdb_sql_container" "model1_multitenant_tenants" {
   account_name        = azurerm_cosmosdb_account.model1_multitenant.name
   database_name       = azurerm_cosmosdb_sql_database.model1_multitenant.name
   partition_key_path  = var.azurerm_cosmosdb_sql_container_model1_multitenant_tenants_partition_key_path
-
-  unique_key {
-    paths = var.azurerm_cosmosdb_sql_container_model1_multitenant_tenants_unique_key
-  }
 }
 
 resource "azurerm_cosmosdb_sql_container" "model1_multitenant_devices" {
@@ -48,10 +44,6 @@ resource "azurerm_cosmosdb_sql_container" "model1_multitenant_devices" {
   account_name        = azurerm_cosmosdb_account.model1_multitenant.name
   database_name       = azurerm_cosmosdb_sql_database.model1_multitenant.name
   partition_key_path  = var.azurerm_cosmosdb_sql_container_model1_multitenant_devices_partition_key_path
-
-  unique_key {
-    paths = var.azurerm_cosmosdb_sql_container_model1_multitenant_devices_unique_key
-  }
 }
 #------------------------------------------------------------------------------------------------------
 #                                   IoT Hub & Stream Analytics Job
@@ -79,12 +71,19 @@ resource "azurerm_iothub" "model1_multitenant" {
   }
 }
 
+resource "azurerm_iothub_consumer_group" "model1_multitenant" {
+  name                   = var.azurerm_iothub_consumer_group_name
+  iothub_name            = azurerm_iothub.model1_multitenant.name
+  eventhub_endpoint_name = var.azurerm_iothub_consumer_group_eventhub_endpoint_name
+  resource_group_name    = azurerm_resource_group.model1_multitenant_rg.name
+}
+
 resource "azurerm_stream_analytics_stream_input_iothub" "model1_multitenant" {
   name                         = var.azurerm_stream_analytics_stream_input_iothub_model1_multitenant_name
   stream_analytics_job_name    = azurerm_stream_analytics_job.model1_multitenant.name
   resource_group_name          = azurerm_stream_analytics_job.model1_multitenant.resource_group_name
   endpoint                     = var.azurerm_stream_analytics_stream_input_iothub_model1_multitenant_endpoint
-  eventhub_consumer_group_name = var.azurerm_stream_analytics_stream_input_iothub_model1_multitenant_endpoint_consumer_group_name
+  eventhub_consumer_group_name = azurerm_iothub_consumer_group.model1_multitenant.name
   iothub_namespace             = azurerm_iothub.model1_multitenant.name
   shared_access_policy_key     = azurerm_iothub.model1_multitenant.shared_access_policy[0].primary_key
   shared_access_policy_name    = var.azurerm_stream_analytics_stream_input_iothub_model1_multitenant_shared_access_policy_name
