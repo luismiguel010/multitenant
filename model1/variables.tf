@@ -146,5 +146,64 @@ variable "azurerm_stream_analytics_output_cosmosdb_model1_multitenant_name" {
   description = "Stream analytics output cosmosdb name"
 }
 
+#------------------------------------------------------------------------------------------------------
+#                                       AKS
+#------------------------------------------------------------------------------------------------------
+variable "azurerm_aks_model1_multitenant_name" {
+  type        = string
+  description = "Aks name"
+}
+
+variable "azurerm_aks_model1_multitenant_dnsprefix" {
+  type        = string
+  description = "Aks dns prefix"
+}
+
+variable "azurerm_aks_model1_multitenant_node_count" {
+  type        = number
+  description = "AKS number of nodes"
+}
 
 
+#------------------------------------------------------------------------------------------------------
+#                                       ACR
+#------------------------------------------------------------------------------------------------------
+variable "azurerm_acr_model1_multitenant_name" {
+  type        = string
+  description = "Container registry name"
+}
+
+variable "azurerm_acr_model1_multitenant_sku" {
+  type        = string
+  default = "Basic"
+  description = "Container registry sku"
+}
+
+
+#------------------------------------------------------------------------------------------------------
+#                                       API MANAGEMENT
+#------------------------------------------------------------------------------------------------------
+variable "azurerm_apim_model1_multitenant_name" {
+  type        = string
+  description = "Api management name"
+}
+
+variable "azurerm_apim_model1_multitenant_publisher_name" {
+  type        = string
+  description = "Api management publisher name"
+}
+
+variable "azurerm_apim_model1_multitenant_publisher_email" {
+  type        = string
+  description = "Api management publisher email"
+}
+variable "azurerm_apim_model1_multitenant_sku" {
+  type        = string
+  default     = "Developer_1"
+  description = "Api management sku name"
+}
+
+variable "azurerm_apim_model1_multitenant_api_name" {
+  type        = string
+  description = "Api management api name"
+}

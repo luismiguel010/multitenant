@@ -118,3 +118,89 @@ resource "azurerm_stream_analytics_output_cosmosdb" "model1_multitenant" {
   ]
 
 }
+
+#------------------------------------------------------------------------------------------------------
+#                                           AKS
+#------------------------------------------------------------------------------------------------------
+
+resource "azurerm_kubernetes_cluster" "model1_multitenant" {
+  name                = var.azurerm_aks_model1_multitenant_name
+  location            = var.azurerm_resource_group_model1_multitenant_rg_location
+  resource_group_name = var.azurerm_resource_group_model1_multitenant_rg_name
+  dns_prefix          = var.azurerm_aks_model1_multitenant_dnsprefix
+
+  default_node_pool {
+    name       = "default"
+    node_count = var.azurerm_aks_model1_multitenant_node_count
+    vm_size    = "Standard_D2_v2"
+  }
+
+  identity {
+    type = "SystemAssigned"
+  }
+
+}
+
+data "azurerm_lb" "model1_multitenant" {
+  name                = "kubernetes"
+  resource_group_name = azurerm_kubernetes_cluster.model1_multitenant.node_resource_group
+}
+
+data "azurerm_public_ip" "model1_multitenant" {
+  name                = data.azurerm_lb.model1_multitenant.frontend_ip_configuration[0].name
+  resource_group_name = azurerm_kubernetes_cluster.model1_multitenant.node_resource_group
+}
+
+#------------------------------------------------------------------------------------------------------
+#                                           ACR
+#------------------------------------------------------------------------------------------------------
+
+resource "azurerm_container_registry" "model1_multitenant" {
+  name                = var.azurerm_acr_model1_multitenant_name
+  resource_group_name = var.azurerm_resource_group_model1_multitenant_rg_name
+  location            = var.azurerm_resource_group_model1_multitenant_rg_location
+  sku                 = var.azurerm_acr_model1_multitenant_sku
+  admin_enabled       = true
+}
+
+resource "azurerm_role_assignment" "model1_multitenant" {
+  principal_id                     = azurerm_kubernetes_cluster.model1_multitenant.kubelet_identity[0].object_id
+  role_definition_name             = "AcrPull"
+  scope                            = azurerm_container_registry.model1_multitenant.id
+  skip_service_principal_aad_check = true
+}
+
+#------------------------------------------------------------------------------------------------------
+#                                           API MANAGEMENT
+#------------------------------------------------------------------------------------------------------
+
+resource "azurerm_api_management" "model1_multitenant" {
+  name                = var.azurerm_apim_model1_multitenant_name
+  location            = var.azurerm_resource_group_model1_multitenant_rg_location
+  resource_group_name = var.azurerm_resource_group_model1_multitenant_rg_name
+  publisher_name      = var.azurerm_apim_model1_multitenant_publisher_name
+  publisher_email     = var.azurerm_apim_model1_multitenant_publisher_email
+
+  sku_name = var.azurerm_apim_model1_multitenant_sku
+}
+
+resource "azurerm_api_management_api" "model1_multitenant" {
+  name                = var.azurerm_apim_model1_multitenant_api_name
+  resource_group_name = azurerm_api_management.model1_multitenant.resource_group_name
+  api_management_name = azurerm_api_management.model1_multitenant.name
+  revision            = "1"
+  display_name        = var.azurerm_apim_model1_multitenant_api_name
+  protocols           = ["https"]
+  service_url         = "http://${data.azurerm_public_ip.model1_multitenant.ip_address}"
+}
+
+resource "azurerm_api_management_api_operation" "model1_multitenant_health" {
+  operation_id        = "health"
+  api_name            = azurerm_api_management_api.model1_multitenant.name
+  api_management_name = azurerm_api_management_api.model1_multitenant.api_management_name
+  resource_group_name = azurerm_api_management_api.model1_multitenant.resource_group_name
+  display_name        = "health"
+  method              = "GET"
+  url_template        = "/healthznet"
+
+}
