@@ -231,20 +231,15 @@ resource "azurerm_key_vault_secret" "model1_multitenant" {
   key_vault_id = azurerm_key_vault.model1_multitenant.id
 }
 
-resource "azuread_application" "auth" {
-  display_name = "auth"
-}
-
 data "azurerm_user_assigned_identity" "model1_multitenant" {
   name                = "application-identity"
   resource_group_name = azurerm_resource_group.model1_multitenant_rg.name
 }
 
 resource "azurerm_key_vault_access_policy" "model1_multitenant" {
-  key_vault_id   = azurerm_key_vault.model1_multitenant.id
-  tenant_id      = data.azurerm_user_assigned_identity.model1_multitenant.tenant_id
-  object_id      = data.azurerm_user_assigned_identity.model1_multitenant.principal_id
-  application_id = data.azurerm_user_assigned_identity.model1_multitenant.id
+  key_vault_id = azurerm_key_vault.model1_multitenant.id
+  tenant_id    = data.azurerm_user_assigned_identity.model1_multitenant.tenant_id
+  object_id    = data.azurerm_user_assigned_identity.model1_multitenant.principal_id
 
   key_permissions = [
     "Get",
