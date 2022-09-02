@@ -175,7 +175,7 @@ variable "azurerm_acr_model1_multitenant_name" {
 
 variable "azurerm_acr_model1_multitenant_sku" {
   type        = string
-  default = "Basic"
+  default     = "Basic"
   description = "Container registry sku"
 }
 
@@ -206,4 +206,26 @@ variable "azurerm_apim_model1_multitenant_sku" {
 variable "azurerm_apim_model1_multitenant_api_name" {
   type        = string
   description = "Api management api name"
+}
+#------------------------------------------------------------------------------------------------------
+#                                           KEY VAULT
+#------------------------------------------------------------------------------------------------------
+variable "azurerm_key_vault_model1_multitenant_name" {
+  type        = string
+  description = "Azure key vault name"
+}
+
+variable "azurerm_key_vault_model1_multitenant_sku_name" {
+  type        = string
+  description = "Azure key vault sku name"
+}
+
+variable "azurerm_key_vault_model1_multitenant_soft_delete_retention_days" {
+  type        = number
+  description = "Azure key vault soft delete retention days"
+}
+
+variable "azurerm_key_vault_secret_model1_multitenant_name" {
+  type        = string
+  description = "Azure key vault secret name"
 }

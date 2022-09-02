@@ -204,3 +204,60 @@ resource "azurerm_api_management_api_operation" "model1_multitenant_health" {
   url_template        = "/healthznet"
 
 }
+
+#------------------------------------------------------------------------------------------------------
+#                                           KEY VAULT
+#------------------------------------------------------------------------------------------------------
+data "azurerm_client_config" "current" {}
+
+data "azurerm_kubernetes_cluster" "model1_multitenant" {
+  name                = azurerm_kubernetes_cluster.model1_multitenant.name
+  resource_group_name = azurerm_kubernetes_cluster.model1_multitenant.resource_group_name
+}
+
+resource "azurerm_key_vault" "model1_multitenant" {
+  name                       = var.azurerm_key_vault_model1_multitenant_name
+  location                   = azurerm_resource_group.model1_multitenant_rg.location
+  resource_group_name        = azurerm_resource_group.model1_multitenant_rg.name
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  sku_name                   = var.azurerm_key_vault_model1_multitenant_sku_name
+  soft_delete_retention_days = var.azurerm_key_vault_model1_multitenant_soft_delete_retention_days
+}
+
+
+resource "azurerm_key_vault_secret" "model1_multitenant" {
+  name         = var.azurerm_key_vault_secret_model1_multitenant_name
+  value        = "AccountEndpoint=${data.azurerm_cosmosdb_account.model1_multitenant.endpoint};AccountKey=${data.azurerm_cosmosdb_account.model1_multitenant.primary_key};"
+  key_vault_id = azurerm_key_vault.model1_multitenant.id
+}
+
+resource "azuread_application" "auth" {
+  display_name = "auth"
+}
+
+data "azurerm_user_assigned_identity" "model1_multitenant" {
+  name                = "application-identity"
+  resource_group_name = azurerm_resource_group.model1_multitenant_rg.name
+}
+
+resource "azurerm_key_vault_access_policy" "model1_multitenant" {
+  key_vault_id   = azurerm_key_vault.model1_multitenant.id
+  tenant_id      = data.azurerm_user_assigned_identity.model1_multitenant.tenant_id
+  object_id      = data.azurerm_user_assigned_identity.model1_multitenant.principal_id
+  application_id = data.azurerm_user_assigned_identity.model1_multitenant.id
+
+  key_permissions = [
+    "Get",
+    "List"
+  ]
+
+  secret_permissions = [
+    "Get",
+    "List"
+  ]
+
+  storage_permissions = [
+    "Get",
+    "List"
+  ]
+}
